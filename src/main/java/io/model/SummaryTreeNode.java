@@ -64,4 +64,11 @@ public class SummaryTreeNode {
         children.forEach(c -> sb.append(c.toString()));
         return sb.toString();
     }
+
+    public boolean hasChild(URL url) {
+        if (url == null) {
+            return false;
+        }
+        return children.stream().anyMatch(c -> url.equals(c.getUrl()));
+    }
 }

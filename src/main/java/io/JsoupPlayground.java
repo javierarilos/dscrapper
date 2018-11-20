@@ -17,7 +17,8 @@ public class JsoupPlayground {
     private static MessageDigest messageDigest;
 
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
-        URL baseUrl = new URL("http://www.github.com");
+//        URL baseUrl = new URL("http://www.github.com");
+        URL baseUrl = new URL("https://www.eldiario.es");
         int maxDepth = 3;
 
         SummaryTreeNode tree = scrape(baseUrl, maxDepth);
@@ -27,11 +28,18 @@ public class JsoupPlayground {
         return scrape(baseUrl, maxDepth, null, null);
     }
 
-    private static SummaryTreeNode scrape(URL baseUrl, int maxDepth, SummaryTreeNode parent, SummaryTreeNode root) throws IOException {
-        if(!baseUrl.getProtocol().toLowerCase().contains("http")) {
+    private static SummaryTreeNode scrape(URL baseUrl, int maxDepth, SummaryTreeNode parent, SummaryTreeNode root) {
+        if (!baseUrl.getProtocol().toLowerCase().contains("http")) {
             return new SummaryTreeNode(baseUrl, baseUrl.toString(), parent);
         }
-        Document d = Jsoup.parse(baseUrl, 10000);
+
+        Document d = null;
+        try {
+            d = Jsoup.parse(baseUrl, 10000);
+        } catch (IOException e) {
+            System.out.println("Error in " + baseUrl + " = " + e);
+            return new SummaryTreeNode(baseUrl, "GOT ERROR.", parent);
+        }
 
         System.out.println(String.format("baseUrl=%s title='%s' charset='%s'", baseUrl.toString(), d.title(), d.charset()));
 
@@ -46,8 +54,11 @@ public class JsoupPlayground {
                     .collect(Collectors.toSet());
 
             for (URL url : currentNodeLinks) {
-                if(!root.hasChild(url)) {
+                if (root != null && !root.hasChild(url)) {
+                    System.out.println("adding... " + url);
                     currentNode.addChild(scrape(url, maxDepth, currentNode, root));
+                } else {
+                    System.out.println("Root already contains url=" + url);
                 }
             }
         }
