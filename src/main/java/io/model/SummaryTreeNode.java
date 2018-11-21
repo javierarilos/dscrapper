@@ -3,48 +3,26 @@ package io.model;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Data
 public class SummaryTreeNode {
-    private int depth;
     private String tag;
-    private SummaryTreeNode parent;
     private URL url;
     private String hash;
     private List<SummaryTreeNode> children;
 
-    public SummaryTreeNode(URL url, String tag, String hash, SummaryTreeNode parent) {
+    public SummaryTreeNode(URL url, String tag, String hash) {
         this.url = url;
         this.tag = tag;
-        this.hash = hash;
-        this.depth = 0;
+        this.hash = toHexString(hash);
         this.children = new ArrayList<>();
-
-        if (parent != null) {
-            this.parent = parent;
-            this.depth = parent.getDepth() + 1;
-        }
     }
 
     public void addChild(SummaryTreeNode childNode) {
         this.children.add(childNode);
-    }
-
-    public int getMaxDepth() {
-        SummaryTreeNode currNode = this;
-        while (currNode.hasChildren()) {
-            currNode = currNode.getChildren().get(0);
-        }
-        return currNode.depth;
-    }
-
-    private boolean hasChildren() {
-        return this.children.size() >= 1;
     }
 
     @Override
@@ -59,25 +37,25 @@ public class SummaryTreeNode {
     public String toString() {
         StringBuilder indentSb = new StringBuilder();
 
-        for (int i = 0; i < depth; i++) {
-            indentSb.append(' ');
-        }
-
         StringBuilder sb = new StringBuilder();
-        char[] bs = hash.substring(0, 10).toCharArray();
-        String[] hexs = new String[bs.length];
-        for (int i = 0; i < bs.length; i++) {
-            hexs[i] = Integer.toHexString(bs[i]);
-        }
 
         sb.append(indentSb)
                 .append("URL: ").append(url)
                 .append(" Tag: ").append(tag)
-                .append(" Hash: ").append(StringUtils.join(hexs, ""))
+                .append(" Hash: ").append(hash)
                 .append("\n");
 
         children.forEach(c -> sb.append(c.toString()));
         return sb.toString();
+    }
+
+    private String toHexString(String hash) {
+        String[] hexs = new String[hash.length()];
+        for (int i = 0; i < hash.length(); i++) {
+            hexs[i] = Integer.toHexString(hash.charAt(i));
+        }
+
+        return StringUtils.join(hexs, "");
     }
 
     public boolean hasChild(URL url) {
