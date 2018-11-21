@@ -24,16 +24,6 @@ public class Scrapper {
     private static final Timer pagePlusImgsTimer = Metrics.timer("page.plus.images");
     private static final Timer imgTimer = Metrics.timer("image");
 
-
-    public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
-//        URL baseUrl = new URL("http://www.github.com");
-        URL baseUrl = new URL("https://www.eldiario.es");
-        int maxDepth = 3;
-
-//        SummaryTreeNode tree = scrape(baseUrl, maxDepth);
-        SummaryTreeNode pageWithImages = getPageWithImagesTimed(baseUrl);
-    }
-
     public static SummaryTreeNode getPageWithImagesTimed(URL baseUrl) {
         Timer.Context pagePlusImgsTimerCtx = pagePlusImgsTimer.time();
         try {

@@ -26,7 +26,7 @@ public class DscrapperApplication extends Application<DscrapperConfiguration> {
 
         final TemplateHealthCheck healthCheck = new TemplateHealthCheck(config.getTemplate());
 
-        final HelloWorldResource resource = new HelloWorldResource(
+        final ScrapeResource resource = new ScrapeResource(
                   config.getTemplate(),
                   config.getDefaultName()
         );

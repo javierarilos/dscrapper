@@ -7,7 +7,7 @@ java -jar target/dscrapper-1.0-SNAPSHOT.jar server config.yml
 ```
 Send request
 ```bash
-curl http://localhost:8080/hello-world
+curl -v 'http://localhost:8080/scrape/sequential/http%3A%2F%2Fwww.eldiario.es%2F'
 ```
 
 ## generating empty dropwizard project
