@@ -1,4 +1,4 @@
-package io;
+package io.core;
 
 import io.model.SummaryTreeNode;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -38,7 +38,7 @@ public class JsoupPlayground {
             return new SummaryTreeNode(baseUrl, "NON-HTTP", baseUrl.toString(), null);
         }
 
-        Document d = null;
+        Document d;
         try {
             d = Jsoup.parse(baseUrl, 10000);
         } catch (IOException e) {
@@ -69,7 +69,9 @@ public class JsoupPlayground {
                 e.printStackTrace();
             }
         }
-
+        System.out.println("===============================================");
+        System.out.println(currentNode);
+        System.out.println("===============================================");
         return currentNode;
 
     }
