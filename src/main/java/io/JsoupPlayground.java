@@ -1,10 +1,18 @@
 package io;
 
 import io.model.SummaryTreeNode;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
@@ -21,7 +29,73 @@ public class JsoupPlayground {
         URL baseUrl = new URL("https://www.eldiario.es");
         int maxDepth = 3;
 
-        SummaryTreeNode tree = scrape(baseUrl, maxDepth);
+//        SummaryTreeNode tree = scrape(baseUrl, maxDepth);
+        SummaryTreeNode pageWithImages = getPageWithImages(baseUrl);
+    }
+
+    private static SummaryTreeNode getPageWithImages(URL baseUrl) {
+        if (!baseUrl.getProtocol().toLowerCase().contains("http")) {
+            return new SummaryTreeNode(baseUrl, "NON-HTTP", baseUrl.toString(), null);
+        }
+
+        Document d = null;
+        try {
+            d = Jsoup.parse(baseUrl, 10000);
+        } catch (IOException e) {
+            System.out.println("Error in " + baseUrl + " = " + e);
+            return new SummaryTreeNode(baseUrl, "ERROR", "GOT ERROR.", null);
+        }
+
+        System.out.println(String.format("baseUrl=%s title='%s' charset='%s'", baseUrl.toString(), d.title(), d.charset()));
+
+
+        SummaryTreeNode currentNode = new SummaryTreeNode(baseUrl, "ROOT-PAGE", getHash(d.toString().getBytes()), null);
+
+        Elements images = d.getElementsByTag("img");
+        for (Element img : images) {
+            String imgUrlStr = img.absUrl("src");
+            try {
+                URL imgUrl = new URL(imgUrlStr);
+                System.out.println("-> getting img: " + imgUrlStr);
+//                byte[] imgBytes = getImgJavaLowLevel(imgUrl);
+                byte[] imgBytes = getImgHttpClient(imgUrl);
+
+                currentNode.addChild(
+                        new SummaryTreeNode(imgUrl, "IMG", getHash(imgBytes), currentNode)
+                );
+
+            } catch (IOException e) {
+                // TODO IMPLEMENT!!
+                e.printStackTrace();
+            }
+        }
+
+        return currentNode;
+
+    }
+
+    private static byte[] getImgHttpClient(URL imgUrl) throws IOException {
+
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        HttpGet httpGet = new HttpGet(imgUrl.toString());
+        CloseableHttpResponse response1 = httpclient.execute(httpGet);
+        ByteArrayOutputStream outputByteStream = new ByteArrayOutputStream();
+        response1.getEntity().writeTo(outputByteStream);
+
+        return outputByteStream.toByteArray();
+    }
+
+    private static byte[] getImgJavaLowLevel(URL imgUrl) throws IOException {
+
+        InputStream imgStream = imgUrl.openStream();
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+
+        for (int b; (b = imgStream.read()) != -1; ) {
+            outStream.write(b);
+        }
+
+        return outStream.toByteArray();
     }
 
     private static SummaryTreeNode scrape(URL baseUrl, int maxDepth) throws IOException {
@@ -30,7 +104,7 @@ public class JsoupPlayground {
 
     private static SummaryTreeNode scrape(URL baseUrl, int maxDepth, SummaryTreeNode parent, SummaryTreeNode root) {
         if (!baseUrl.getProtocol().toLowerCase().contains("http")) {
-            return new SummaryTreeNode(baseUrl, baseUrl.toString(), parent);
+            return new SummaryTreeNode(baseUrl, "NON-HTTP", baseUrl.toString(), parent);
         }
 
         Document d = null;
@@ -38,13 +112,13 @@ public class JsoupPlayground {
             d = Jsoup.parse(baseUrl, 10000);
         } catch (IOException e) {
             System.out.println("Error in " + baseUrl + " = " + e);
-            return new SummaryTreeNode(baseUrl, "GOT ERROR.", parent);
+            return new SummaryTreeNode(baseUrl, "ERROR", "GOT ERROR.", parent);
         }
 
         System.out.println(String.format("baseUrl=%s title='%s' charset='%s'", baseUrl.toString(), d.title(), d.charset()));
 
 
-        SummaryTreeNode currentNode = new SummaryTreeNode(baseUrl, getHash(d.toString()), parent);
+        SummaryTreeNode currentNode = new SummaryTreeNode(baseUrl, "ROOT-PAGE", getHash(d.toString().getBytes()), parent);
 
         if (currentNode.getDepth() < maxDepth) {
             Set<URL> currentNodeLinks = d.select("a[href]").stream()
@@ -77,8 +151,8 @@ public class JsoupPlayground {
         }
     }
 
-    private static String getHash(String d) {
-        getMessageDigest().update(d.getBytes());
+    private static String getHash(byte[] d) {
+        getMessageDigest().update(d);
         return new String(messageDigest.digest());
     }
 

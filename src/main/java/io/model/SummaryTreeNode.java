@@ -9,13 +9,15 @@ import java.util.List;
 @Data
 public class SummaryTreeNode {
     private int depth;
+    private String tag;
     private SummaryTreeNode parent;
     private URL url;
     private String hash;
     private List<SummaryTreeNode> children;
 
-    public SummaryTreeNode(URL url, String hash, SummaryTreeNode parent) {
+    public SummaryTreeNode(URL url, String tag, String hash, SummaryTreeNode parent) {
         this.url = url;
+        this.tag = tag;
         this.hash = hash;
         this.depth = 0;
         this.children = new ArrayList<>();
