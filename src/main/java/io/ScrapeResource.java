@@ -2,7 +2,6 @@ package io;
 
 import com.codahale.metrics.annotation.Timed;
 import io.core.Scrapper;
-import io.model.EncodeRequest;
 import io.model.Saying;
 import io.model.SummaryTreeNode;
 
@@ -51,7 +50,7 @@ public class ScrapeResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/urlencode")
     public HashMap<String, String> encode(HashMap<String, String> encodeRequest) throws UnsupportedEncodingException {
-        if(!encodeRequest.containsKey("string")) {
+        if (!encodeRequest.containsKey("string")) {
             throw new ClientErrorException("Parameter string is mandatory", 400);
         }
 
