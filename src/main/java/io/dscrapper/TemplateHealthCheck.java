@@ -1,4 +1,4 @@
-package io;
+package io.dscrapper;
 
 import com.codahale.metrics.health.HealthCheck;
 

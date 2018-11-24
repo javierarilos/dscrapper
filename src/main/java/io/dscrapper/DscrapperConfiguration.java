@@ -1,4 +1,4 @@
-package io;
+package io.dscrapper;
 
 import io.dropwizard.Configuration;
 import com.fasterxml.jackson.annotation.JsonProperty;

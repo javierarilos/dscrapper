@@ -1,9 +1,11 @@
-package io;
+package io.dscrapper;
 
 import com.codahale.metrics.annotation.Timed;
-import io.core.Scrapper;
-import io.model.Saying;
-import io.model.SummaryTreeNode;
+import io.dscrapper.core.Scrapper;
+import io.dscrapper.model.Saying;
+import io.dscrapper.model.SummaryTreeNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -19,12 +21,14 @@ import java.util.concurrent.atomic.AtomicLong;
 @Path("/scrape")
 @Produces(MediaType.APPLICATION_JSON)
 public class ScrapeResource {
+    private static final Logger logger = LoggerFactory.getLogger(ScrapeResource.class);
     private final String template;
     private final String defaultName;
     private final AtomicLong counter;
 
 
     public ScrapeResource(String template, String defaultName) {
+
         this.template = template;
         this.defaultName = defaultName;
         this.counter = new AtomicLong();
@@ -41,8 +45,13 @@ public class ScrapeResource {
     @Path("/sequential/{url}")
     @Timed
     public SummaryTreeNode getSequential(@PathParam("url") String encodedURL) throws MalformedURLException, UnsupportedEncodingException {
+        logger.info("Scrape REQ: {}", encodedURL);
+
         String urlString = URLDecoder.decode(encodedURL, "UTF-8");
-        return Scrapper.getPageWithImagesTimed(new URL(urlString));
+        SummaryTreeNode summary = Scrapper.getPageWithImagesTimed(new URL(urlString));
+
+        logger.info("Scrapped DONE: {} - {} children={}", summary.getUrl(), summary.getTag(), summary.getChildren().size());
+        return summary;
     }
 
     @POST

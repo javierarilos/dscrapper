@@ -1,8 +1,8 @@
-package io.core;
+package io.dscrapper.core;
 
 import com.codahale.metrics.Timer;
-import io.health.Metrics;
-import io.model.SummaryTreeNode;
+import io.dscrapper.health.Metrics;
+import io.dscrapper.model.SummaryTreeNode;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -39,9 +39,6 @@ public class Scrapper {
                 return new SummaryTreeNode(baseUrl, "ERROR", "GOT ERROR.");
             }
 
-            System.out.println(String.format("baseUrl=%s title='%s' charset='%s'", baseUrl.toString(), d.title(), d.charset()));
-
-
             SummaryTreeNode currentNode = new SummaryTreeNode(baseUrl, "ROOT-PAGE", getHash(d.toString().getBytes()));
 
             Elements images = d.getElementsByTag("img");
@@ -50,8 +47,6 @@ public class Scrapper {
                 Timer.Context imgTimerCtx = imgTimer.time();
                 try {
                     URL imgUrl = new URL(imgUrlStr);
-                    System.out.println("-> getting img: " + imgUrlStr);
-//                byte[] imgBytes = getImgJavaLowLevel(imgUrl);
                     byte[] imgBytes = getImgHttpClient(imgUrl);
 
                     currentNode.addChild(
@@ -59,15 +54,11 @@ public class Scrapper {
                     );
 
                 } catch (IOException e) {
-                    // TODO IMPLEMENT!!
-                    e.printStackTrace();
+                    System.out.println(">>>> GOT ERROR: getting "+img.absUrl("src")+" -> " + e);
                 } finally {
                     imgTimerCtx.stop();
                 }
             }
-            System.out.println("===============================================");
-            System.out.println(currentNode);
-            System.out.println("===============================================");
             return currentNode;
         } finally {
             pagePlusImgsTimerCtx.stop();
@@ -78,7 +69,7 @@ public class Scrapper {
 
     private static byte[] getImgHttpClient(URL imgUrl) throws IOException {
 
-        CloseableHttpClient httpclient = HttpClients.createDefault();
+        CloseableHttpClient httpclient = HttpClients.custom().disableCookieManagement().build();
         HttpGet httpGet = new HttpGet(imgUrl.toString());
         CloseableHttpResponse response1 = httpclient.execute(httpGet);
         ByteArrayOutputStream outputByteStream = new ByteArrayOutputStream();

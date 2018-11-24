@@ -1,4 +1,4 @@
-package io.model;
+package io.dscrapper.model;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;

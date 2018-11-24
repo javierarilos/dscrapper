@@ -1,7 +1,18 @@
 logging:
   level: INFO
   loggers:
-    io: DEBUG
+    io.dscrapper: DEBUG
+    org.apache.http: ERROR
+
+
+server:
+  applicationConnectors:
+  - type: http
+    port: 8080
+    bindHost: 127.0.0.1 # only bind to loopback
+    acceptorThreads: 1
+    selectorThreads: 2
+    acceptQueueSize: 1
 
 template: Hello, %s!
 defaultName: Stranger

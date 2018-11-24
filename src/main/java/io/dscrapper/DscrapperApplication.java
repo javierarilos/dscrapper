@@ -1,4 +1,4 @@
-package io;
+package io.dscrapper;
 
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
